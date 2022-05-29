@@ -15,6 +15,35 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   String? _city;
+  late final WeatherProvider _weatherProv;
+
+  @override
+  void initState() {
+    super.initState();
+    _weatherProv = context.read<WeatherProvider>();
+    _weatherProv.addListener(_registerListener);
+  }
+
+  @override
+  void dispose() {
+    _weatherProv.removeListener(_registerListener);
+    super.dispose();
+  }
+
+  void _registerListener() {
+    final WeatherState ws = context.read<WeatherProvider>().state;
+
+    if (ws.status == WeatherStatus.error) {
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            content: Text(ws.error.errMsg),
+          );
+        },
+      );
+    }
+  }
 
   // @override
   // void initState() {
@@ -56,8 +85,34 @@ class _HomePageState extends State<HomePage> {
           )
         ],
       ),
-      body: Center(
-        child: Text("Home"),
+      body: _showWeather(),
+    );
+  }
+
+  Widget _showWeather() {
+    final weatherState = context.watch<WeatherProvider>().state;
+    if (weatherState.status == WeatherStatus.initial ||
+        (weatherState.status == WeatherStatus.error &&
+            weatherState.weather.title.isEmpty)) {
+      return Center(
+        child: Text(
+          "Select a city",
+          style: TextStyle(fontSize: 20.0),
+        ),
+      );
+    }
+
+    if (weatherState.status == WeatherStatus.loading) {
+      return Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+    // status = error -> addListener를 사용하는 방식으로 showDialog를 띄움.
+
+    return Center(
+      child: Text(
+        weatherState.weather.title,
+        style: TextStyle(fontSize: 18.0),
       ),
     );
   }

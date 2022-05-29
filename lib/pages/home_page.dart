@@ -5,6 +5,7 @@ import 'package:weather_provider/pages/search_page.dart';
 import 'package:weather_provider/providers/weather_provider.dart';
 import 'package:weather_provider/repositories/weather_repository.dart';
 import 'package:weather_provider/services/weather_api_services.dart';
+import 'package:weather_provider/widgets/error_dialog.dart';
 
 class HomePage extends StatefulWidget {
   HomePage({Key? key}) : super(key: key);
@@ -34,14 +35,7 @@ class _HomePageState extends State<HomePage> {
     final WeatherState ws = context.read<WeatherProvider>().state;
 
     if (ws.status == WeatherStatus.error) {
-      showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            content: Text(ws.error.errMsg),
-          );
-        },
-      );
+      errorDialog(context, ws.error.errMsg);
     }
   }
 
